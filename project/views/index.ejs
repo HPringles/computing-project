@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat Application</title>
+    </head>
+    <body>
+        <h1>Messages:</h1>
+        <ul id="messages">
+        </ul>
+        
+        <form action="">
+            <p id="roster">Users online: </p>
+            <input id="m" autocomplete="off"/><button type="button" id="btn">Send</button>
+        </form>
+        <input type="button" id="user" value="update username"></input>
+        
+        
+        <!--Import external content-->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="/js/index.js"></script>
+    </body>
+</html>

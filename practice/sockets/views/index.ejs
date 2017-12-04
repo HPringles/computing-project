@@ -31,17 +31,24 @@
         
         var socket = io();
         var username = prompt("Enter username")
+        // Run the setusername function with the username entered by the user
         setUsername(username);
+        
         function setUsername(username){
           console.log("username set")
+          // send the new username to the server
           socket.emit("new user", username)
         }
+        
+        // When the send message form is submitted, send the message to the server
         $('form').submit(function(){
           socket.emit('chat message', $('#m').val());
           $('#m').val('');
           $('#messages').append($('<li>').text(msg));
           return false;
         });
+        
+        
         $('form').keypress(function(e){
           if (e.which == 13) {
               e.preventDefault();
