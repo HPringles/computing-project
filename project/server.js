@@ -34,10 +34,8 @@ io.on("connection", function(socket){
     
     socket.on("update user", function(username){
         // Replace the current version of the username with the new one
-        roster.pop(userName);
-        roster.push(username);
-        userName = username;
-        
+        var index = roster.indexOf(userName)
+        roster[index] = username
         // Send the updated roster to all users
         io.emit("roster update", roster);
     })

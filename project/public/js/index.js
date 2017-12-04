@@ -16,13 +16,17 @@ $(function () {
                 
                 function sendMessage(messageLocation){
                     // Send the message located in the supplied messageLocation
+                    if ($(messageLocation).val() == ""){
+                      alert("error sending message");
+                      return false;
+                    }
                     socket.emit('chat message', $(messageLocation).val());
                     // Reset the Message box to have no value.
                     $(messageLocation).val('');
                 }
                 
                 // When a message is entered and the button is pressed, run the send message function
-                $('#m').click(function(){
+                $('#btn').click(function(){
                   sendMessage('#m');
                 });
                 
