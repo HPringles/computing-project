@@ -2,22 +2,29 @@
 <html>
     <head>
         <title>Chat Application</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/index.js"></script>
     </head>
-    <body>
+    <body ng-app="whatsUp" ng-controller="whatsUpController as controller">
+        <strong><p ng-model="test">testytest</p></strong>
         <h1>Messages:</h1>
         <ul id="messages">
+            <li ng-repeat="message in controller.messages track by $index">
+                {{message}}
+            </li>
         </ul>
-        
-        <form action="">
-            <p id="roster">Users online: </p>
-            <input id="m" autocomplete="off"/><button type="button" id="btn">Send</button>
+        <p id="roster">Users online: <span ng-repeat="user in controller.roster track by $index">{{user}}, </span></p>
+        <form ng-submit="controller.sendMessage()">
+            
+            <input id="m" autocomplete="off" ng-model="controller.messageText"/><button type="submit" id="btn">Send</button>
         </form>
-        <input type="button" id="user" value="update username"></input>
+        <input type="button" id="user" value="update username" ng-click="controller.updateUsername()"></input>
         
         
         <!--Import external content-->
-        <script src="/socket.io/socket.io.js"></script>
+        
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="/js/index.js"></script>
+
     </body>
 </html>

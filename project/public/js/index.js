@@ -1,64 +1,59 @@
-$(function () {
+var socket = io();
+
+// CREATE A MODULE TO RUN THE ANGULARJS CODE INSIDE OF
+angular.module('whatsUp', [])
+    //CREATE A CONTROLLER FOR THE VIEW - $timeout is injected to allow me to use it later.
+    .controller('whatsUpController', function($timeout){
+        // Make the controller accessible from the whatsUpController object
+        var whatsUpController = this;
         
-                var socket = io();
-                username = "";
-                while (username == ""){
-                var username = prompt("Enter username") // prompt the user to enter a username
-                }
-                // run the set username function to send the entered username to the server.
-                setUsername(username);
-                
-                // send the username to the server
-                function setUsername(username){
-                  console.log("username set")
-                  socket.emit("new user", username)
-                }
-                
-                function sendMessage(messageLocation){
-                    // Send the message located in the supplied messageLocation
-                    if ($(messageLocation).val() == ""){
-                      alert("error sending message");
-                      return false;
-                    }
-                    socket.emit('chat message', $(messageLocation).val());
-                    // Reset the Message box to have no value.
-                    $(messageLocation).val('');
-                }
-                
-                // When a message is entered and the button is pressed, run the send message function
-                $('#btn').click(function(){
-                  sendMessage('#m');
-                });
-                
-                // When the enter key is pressed, run the send message function
-                $('form').keypress(function(e){
-                  if (e.which == 13) {
-                      e.preventDefault();
-                      sendMessage('#m');
-                  }
-                  
-                });
-                
-                $('#user').click(function(){
-                  var newName = ""
-                  while (newName == ""){
-                    newName = prompt("Enter new username");
-                  }
-                    socket.emit("update user", newName)
-                })
-                
-                socket.on('chat message', function(msg){
-                  $('#messages').append($('<li>').text(msg));
-                });
-                
-                socket.on('roster update', function(roster){
-                  console.log(roster)
-                  rosterString = ""
-                  roster.forEach(function(user){
-                    rosterString += user + ", ";
-                  })
-                  console.log(rosterString)
-                  $('#roster').text("Users online: "  + rosterString)
-                })
-                
-              });
+        // SET UP STARTING VARIABLES
+        whatsUpController.messages = [];
+        whatsUpController.roster = [];
+        whatsUpController.username = null;
+        
+        // SET USERNAME ON WINDOW OPEN
+        // if the user doesnt type anything into the prompt, reopen the prompt and try again.
+        while(!whatsUpController.username){
+            whatsUpController.username = prompt("Enter a username");
+        }
+        socket.emit("new user", whatsUpController.username);
+
+        // When message of type "roster update" is recieved, update the value of whatsUpController.roster
+        socket.on("roster update", function(data){
+            // $timeout allows the data to update instantly, instead of when page focus is triggered(button press or text input)
+            $timeout(function(){
+                whatsUpController.roster = data;
+            });
+            
+            
+        });
+        
+        socket.on("chat message", function(data){
+            $timeout(function(){
+                // appends the message data to the whatsAppController.messages array
+                whatsUpController.messages.push(data); 
+            });
+            
+        });
+        
+        // When the form is submitted, send the message to the server
+        whatsUpController.sendMessage = function(){
+            socket.emit("chat message", whatsUpController.messageText);
+        };
+        
+        // When the update username button is clicked, create a prompt and ask for a new username to be entered
+        whatsUpController.updateUsername = function(){
+            
+            whatsUpController.username = null;
+            
+            while(!whatsUpController.username){
+                whatsUpController.username = prompt("Enter a new username \n (If the username is incorrect this window will reopen.)");
+            }
+            
+            // send the new username
+            socket.emit("update user", whatsUpController.username);
+        };
+});
+    
+
