@@ -16,7 +16,7 @@ app.use("/", routes);
 var roster = []; // Roster - Array of all usernames currently online
 
 io.on("connection", function(socket){
-    var userName = ""
+    var userName = "";
     
     // Detect the message sent by the client to supply the server with the clients username
     socket.on("new user", function(username){
@@ -24,18 +24,18 @@ io.on("connection", function(socket){
         roster.push(username); // Add the username to the end of the roster
         io.emit("roster update", roster); // Send the updated roster to all users
         
-    })
+    });
     
     // Detect a message recieved from the client
     socket.on("chat message", function(message){
         // Send the message to all users with the userName of the sending user before the message
         io.emit("chat message", userName + ": " + message);
-    })
+    });
     
     socket.on("update user", function(username){
         // Replace the current version of the username with the new one
-        var index = roster.indexOf(userName)
-        roster[index] = username
+        var index = roster.indexOf(userName);
+        roster[index] = username;
         // Send the updated roster to all users
         io.emit("roster update", roster);
     })

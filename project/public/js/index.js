@@ -39,7 +39,10 @@ angular.module('whatsUp', [])
         
         // When the form is submitted, send the message to the server
         whatsUpController.sendMessage = function(){
-            socket.emit("chat message", whatsUpController.messageText);
+            // checks there is a message in the box, then sends it
+            if (whatsUpController.messageText){
+                socket.emit("chat message", whatsUpController.messageText);
+            }
         };
         
         // When the update username button is clicked, create a prompt and ask for a new username to be entered
