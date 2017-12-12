@@ -10,7 +10,11 @@
         <h1>Messages:</h1>
         <ul id="messages">
             <li ng-repeat="message in controller.messages track by $index">
-                {{message}}
+                {{message.messageText}}
+                <ul>
+                    <li>{{message.sender}}</li>
+                    <li>{{message.timeSent | date: 'EEEE, d, HH:mm'}} </li>
+                </ul>
             </li>
         </ul>
         <p id="roster">Users online: <span ng-repeat="user in controller.roster track by $index">{{user}}, </span></p>

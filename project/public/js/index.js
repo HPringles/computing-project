@@ -11,6 +11,8 @@ angular.module('whatsUp', [])
         whatsUpController.messages = [];
         whatsUpController.roster = [];
         whatsUpController.username = null;
+        whatsUpController.initComplete = false;
+        whatsUpController.waitingMessages = [];
         
         // SET USERNAME ON WINDOW OPEN
         // if the user doesnt type anything into the prompt, reopen the prompt and try again.
@@ -29,11 +31,34 @@ angular.module('whatsUp', [])
             
         });
         
+        // Get a message that was sent as part of the initialisation process
+        socket.on("database message", function(data){
+            whatsUpController.messages.push(data);
+        });
+        
+        // When the initialisation is complete
+        socket.on("initialisation complete", function(){
+            // For each message in the waiting list
+            whatsUpController.waitingMessages.forEach(function(message){
+                // Add the message to the messages array so that it can be displayed
+                whatsUpController.messages.push(message);
+            })
+            // set the initComplete value to true to allow the rest of the script to run
+            whatsUpController.initComplete = true;
+
+        });
+        
         socket.on("chat message", function(data){
-            $timeout(function(){
-                // appends the message data to the whatsAppController.messages array
-                whatsUpController.messages.push(data); 
-            });
+            // If initialisation is complete, add the message to the messages array
+            if(whatsUpController.initComplete){
+                $timeout(function(){
+                    // appends the message data to the whatsAppController.messages array
+                    whatsUpController.messages.push(data); 
+                });
+            //Otherwise add it to the waiting array
+            } else {
+                whatsUpController.waitingMessages.push(data);
+            }
             
         });
         
