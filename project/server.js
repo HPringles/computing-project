@@ -26,9 +26,9 @@ io.on("connection", function(socket){
     
     // Detect the message sent by the client to supply the server with the clients username
     socket.on("new user", function(username){
-        var sock = socket.id
+        var sockID = socket.id
         userName = username;
-        roster.push(username); // Add the username to the end of the roster
+        roster.push({username: username, socketID: sockID}); // Add the username and socketID to the roster
         io.emit("roster update", roster); // Send the updated roster to all users
 
         // Find all messages in the database
@@ -77,13 +77,25 @@ io.on("connection", function(socket){
     socket.on("update user", function(username){
         // Replace the current version of the username with the new one
         var index = roster.indexOf(userName);
-        roster[index] = username;
+        userName = username;
+        roster[index].username = username;
         // Send the updated roster to all users
         io.emit("roster update", roster);
     })
 
     
 });
+
+setInterval(function(){
+    roster.forEach(function(user){
+        if(!io.nsps["/"].sockets.hasOwnProperty(user.socketID)){
+            roster.splice(roster.indexOf(user), 1);
+            io.emit("roster update", roster);
+        }
+    })
+})
+
+
 // Open the server, and listen for connections.
 http.listen(process.env.PORT, function(){
     console.log("Listening");

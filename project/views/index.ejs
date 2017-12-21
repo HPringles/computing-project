@@ -17,7 +17,7 @@
                 </ul>
             </li>
         </ul>
-        <p id="roster">Users online: <span ng-repeat="user in controller.roster track by $index">{{user}}, </span></p>
+        <p id="roster">Users online: <span ng-repeat="user in controller.roster track by $index">{{user.username}}, </span></p>
         <form ng-submit="controller.sendMessage()">
             
             <input id="m" autocomplete="off" ng-model="controller.messageText"/><button type="submit" id="btn">Send</button>
