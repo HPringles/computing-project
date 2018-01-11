@@ -7,7 +7,9 @@
         <script src="/js/index.js"></script>
     </head>
     <body ng-app="whatsUp" ng-controller="whatsUpController as controller">
+        <p id="chats"><span ng-repeat="chat in controller.chats track by $index">{{chat.username}}</span></p>
         <h1>Messages:</h1>
+        <p ng-bind="authCookie"></p>
         <ul id="messages">
             <li ng-repeat="message in controller.messages track by $index">
                 {{message.messageText}}

@@ -14,12 +14,13 @@ angular.module('whatsUp', [])
         whatsUpController.initComplete = false;
         whatsUpController.waitingMessages = [];
         
-        // SET USERNAME ON WINDOW OPEN
-        // if the user doesnt type anything into the prompt, reopen the prompt and try again.
-        while(!whatsUpController.username){
-            whatsUpController.username = prompt("Enter a username");
+        // SEND message to server with authentication key, if it is saved as a cookie - if not redirect to the login page
+        if(!document.cookie['authKey'] && !document.cookie['userName'] && !document.cookie['userID']){
+            window.location = "/login"
+        } else {
+            socket.emit('initialisation message', {authKey: document.cookie['authKey'], userID: document.cookie['userID']})
         }
-        socket.emit("new user", whatsUpController.username);
+        
 
         // When message of type "roster update" is recieved, update the value of whatsUpController.roster
         socket.on("roster update", function(data){
