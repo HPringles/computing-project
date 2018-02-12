@@ -7,7 +7,6 @@
         <script src="/js/index.js"></script>
     </head>
     <body ng-app="whatsUp" ng-controller="whatsUpController as controller">
-        <p id="chats"><span ng-repeat="chat in controller.chats track by $index">{{chat.username}}</span></p>
         <h1>Messages:</h1>
         <p ng-bind="authCookie"></p>
         <ul id="messages">
@@ -25,6 +24,12 @@
             <input id="m" autocomplete="off" ng-model="controller.messageText"/><button type="submit" id="btn">Send</button>
         </form>
         <input type="button" id="user" value="update username" ng-click="controller.updateUsername()"></input>
+        
+        
+        <div id="all-users">
+            All Users: 
+            <p ng-repeat="user in controller.contacts track by $index"><button ng-click="controller.switchChat(user._id)">{{user.username}}</button></p>
+        </div>
         
         
         <!--Import external content-->

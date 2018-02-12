@@ -8,6 +8,7 @@ var chatSchema = new Schema({
     chatMessages: [{
         messageText: String,
         sender: String,
+        senderID: String,
         timeSent: Date
         
     }],
