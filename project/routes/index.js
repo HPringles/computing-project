@@ -12,11 +12,15 @@ router.get("/", function(req, res){
     res.redirect("/chat");
     
 });
-
+/*  When the chat route is requested - render the chat page.
+    The authentication is handled in the view's logic */
 router.get("/chat", function(req, res){
     res.render("index")
 });
 
+/*  When the /login route is requested, 
+    send all users to the login page
+*/
 router.get("/login", function(req, res){
     User.find({}, function(err, users){
         if(err){return console.log(err)}
@@ -27,7 +31,10 @@ router.get("/login", function(req, res){
     
 
 });
-
+/*
+    When the /login route is POST requested
+    login the user
+*/
 router.post("/login", upload.array() ,function(req, res, next){
     User.findById(req.body.id, function(err, data){
         if(err){ return console.log(err) }
@@ -42,6 +49,10 @@ router.post("/login", upload.array() ,function(req, res, next){
     
 });
 
+/* 
+    When the /signup route is POST requested
+    create a new user with the data passed to the request
+*/
 router.post("/signup", upload.array() ,function(req, res, next){
     var newUser = new User({
         username: req.body.username,
@@ -59,7 +70,10 @@ router.post("/signup", upload.array() ,function(req, res, next){
     
 });
 
-
+/* 
+    When the logout route is requested, 
+    remove all cookies from the user and redirect to the login route
+*/
 router.get("/logout", function(req, res){
     //unset the cookies and redirect to the login page
     
@@ -70,4 +84,4 @@ router.get("/logout", function(req, res){
 });
 
 
-module.exports = router;
+module.exports = router; // Export the routes file to the main file(server.js)

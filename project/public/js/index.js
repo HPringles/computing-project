@@ -62,9 +62,13 @@ angular.module('whatsUp', [])
                             foundInContacts = true
                         }
                     })
+                    
                     if (!foundInContacts){
-                        whatsUpController.contacts.push(user)
+                        // console.log(data[0])
+                        // console.log(whatsUpController.contacts[1])
+                        // whatsUpController.contacts.push(user)
                     }
+                    console.log(whatsUpController.contacts)
                 })
                 
             });
@@ -123,6 +127,7 @@ angular.module('whatsUp', [])
                     newChatFromDatabase(data.data)
             }
         })
+        
         
         whatsUpController.switchChat = function(userID){
             var found;
