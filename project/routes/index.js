@@ -16,7 +16,7 @@ app.get("/", function(req, res){
 /*  When the chat route is requested - render the chat page.
     Only allow access if the user is logged in
     The authentication is handled in the view's logic */
-app.get("/chat", isLoggedIn() ,function(req, res){
+app.get("/chat", isLoggedIn ,function(req, res){
     res.render("index")
 });
 
@@ -69,15 +69,15 @@ app.get("/logout", function(req, res){
     res.redirect("/login");
 });
 
-
+};
 // Middleware function to check if the user is currently authenticated
-function isLoggedIn(req, res, next){
-    // If the user is already logged in, allow them to continue
-    if (req.isAuthenticated()){
+function isLoggedIn(req, res, next) {
+
+    // if user is authenticated in the session, carry on 
+    if (req.isAuthenticated())
         return next();
-    }
-    // Otherwise redirect to the login page
-    res.redirect("/login")
+
+    // if they aren't redirect them to the home page
+    res.redirect('/');
 }
 
-};
