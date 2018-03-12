@@ -14,8 +14,9 @@ app.get("/", function(req, res){
     
 });
 /*  When the chat route is requested - render the chat page.
+    Only allow access if the user is logged in
     The authentication is handled in the view's logic */
-app.get("/chat", function(req, res){
+app.get("/chat", isLoggedIn() ,function(req, res){
     res.render("index")
 });
 
@@ -34,7 +35,7 @@ app.get("/login", function(req, res){
 });
 /*
     When the /login route is POST requested
-    login the user
+    Run the 'local-login' strategy
 */
 app.post("/login", upload.array(), passport.authenticate('local-login', {
     successRedirect: "/authorise",
@@ -43,7 +44,7 @@ app.post("/login", upload.array(), passport.authenticate('local-login', {
 
 /* 
     When the /signup route is POST requested
-    create a new user with the data passed to the request
+    Run the 'local-signup' strategy
 */
 app.post("/signup", upload.array() , passport.authenticate('local-signup', {
     successRedirect: "/authorise",
@@ -51,18 +52,16 @@ app.post("/signup", upload.array() , passport.authenticate('local-signup', {
 }))
 
 app.get("/authorise", function(req, res, next){
+    // Route to allow the cookies to be set
     res.cookie('userName', req.user.username);
     res.cookie('authKey', req.user.authenticationKey);
     res.cookie('userID', req.user.id);
     res.redirect("/chat")
 })
 
-/* 
-    When the logout route is requested, 
-    remove all cookies from the user and redirect to the login route
-*/
+
 app.get("/logout", function(req, res){
-    //unset the cookies and redirect to the login page
+    // Unauthenticate the user, clear the cookies and redirect to the login page
     req.logout()
     res.clearCookie("authKey");
     res.clearCookie("userName");
@@ -70,5 +69,15 @@ app.get("/logout", function(req, res){
     res.redirect("/login");
 });
 
+
+// Middleware function to check if the user is currently authenticated
+function isLoggedIn(req, res, next){
+    // If the user is already logged in, allow them to continue
+    if (req.isAuthenticated()){
+        return next();
+    }
+    // Otherwise redirect to the login page
+    res.redirect("/login")
+}
 
 };
