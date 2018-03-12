@@ -6,15 +6,15 @@
     <body >
         <form action="/signup" method="POST" enctype="multipart/form-data">
             <input type="text" name="username" id="username" placeholder="Username"></input>
-            <button type="submit">Go</button>
+            <input type="password" name="password" placehold="password"></input>
+            <button type="submit">Signup</button>
         </form>
         
-        <% for (var i = 0; i < users.length; i++) { %>
         <form action="/login" method="POST" enctype="multipart/form-data">
-            <input type="hidden" display="none" name="id" value="<%= users[i]._id %>"></input>
-            <p><button><%= users[i].username %></button></p>
+            <input type="text" name="username" id="username" placeholder="username"></input>
+            <input type="password" name="password" id="password" placeholder="password"></input>
+            <button type="submit">Log in</button>
         </form>
-        <% } %>
 
     </body>
 </html>

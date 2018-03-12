@@ -1,25 +1,31 @@
 // Set Up External File Variables
 
-var express     = require("express"),
-    app         = express(),
-    http        = require("http").Server(app),
-    io          = require("socket.io")(http),
-    routes      = require("./routes/index.js"),
-    path        = require("path"),
-    mongoose    = require("mongoose"),
-    User        = require("./models/user.js"),
-    Chat        = require("./models/chat.js"),
-    dotenv      = require("dotenv").config(),
-    cookieParser = require('cookie-parser'),
-    seed        = require("./seed.js"),
-    isDebugMode = false
+var express         = require("express"),
+    app             = express(),
+    http            = require("http").Server(app),
+    io              = require("socket.io")(http),
+    path            = require("path"),
+    mongoose        = require("mongoose"),
+    User            = require("./models/user.js"),
+    Chat            = require("./models/chat.js"),
+    dotenv          = require("dotenv").config(),
+    cookieParser    = require('cookie-parser'),
+    seed            = require("./seed.js"),
+    passport        = require("passport"),
+    session         = require("express-session"),
+    isDebugMode     = false;
     
 app.set("view engine", "ejs") // Set the type of file to use to make pages dynamic
 app.set('views', path.join(__dirname, '/views')); // Set the location for all views files(pages) to be stored
 app.use(express.static(__dirname + "/public")); // Set the public directory.
 app.use(cookieParser(process.env.COOKIE_SECRETS)) // Set up cookie parser using the list of secrets held in the .env file
+app.use(session({secret: process.env.SESSION_SECRET}))
+app.use(passport.initialize())
+app.use(passport.session())
 
 mongoose.connect(process.env.DATABASE_URL, { useMongoClient: true });
+
+require("./passportconfig.js")(passport);
 
 /*
 USE THIS TO SEED THE DATABASE WITH TWO TEST USERS AND A TEST CHAT
@@ -28,12 +34,14 @@ seed.seedUsers()
 seed.seedChat()
 
 */
-app.use("/", routes);
+
+require("./routes/index.js")(app, passport)
+
 
 
 // If the third argument provided is true, set debug mode to ON
 if (process.argv[2] == "true"){
-    isDebugMode = true
+    isDebugMode = true;
 }
 
 // if debug mode is ON and console.debug() is called, console.log the args
@@ -42,7 +50,7 @@ console.debug = function(args)
   if (isDebugMode){
     console.log(args);
   }
-}
+};
 
 
 var roster = []; // Roster - Array of all users currently online
@@ -50,17 +58,17 @@ var roster = []; // Roster - Array of all users currently online
 // Search the roster for the userID provided
 function findUserInRoster(userID){
     var index;
-    console.debug(roster)
+    console.debug(roster);
     
     roster.some(function(user){
         // If the user is null, it does not exist - do not continue to check this index
         if (user === null){
-            return
+            return;
         }
         if (user._id == userID) {
             
-            index = roster.indexOf(user)
-            return
+            index = roster.indexOf(user);
+            return;
         }
     })
     // Debug messages
@@ -68,21 +76,21 @@ function findUserInRoster(userID){
     if (index >= 0){
         console.debug("User(" + userID + ") was found in the roster, returning the index as stated above")
         // Return the index of the user if found
-        return index 
+        return index; 
         
     } else {
-        console.debug("User(" + userID + ") was not found in the roster, returning false")
+        console.debug("User(" + userID + ") was not found in the roster, returning false");
         // return false if the user is not found
-        return false
+        return false;
     }
 }
 
 io.on("connection", function(socket){
-    var userName
-    var authenticated = false
-    var userID
+    var userName;
+    var authenticated = false;
+    var userID;
     
-    console.debug("New client connected on socket: " + socket.id)
+    console.debug("New client connected on socket: " + socket.id);
     
     
 
@@ -109,7 +117,7 @@ io.on("connection", function(socket){
                     authenticated = true;
                     userID = user._id;
     
-                    var found = false
+                    var found = false;
                     // Check through each user in the roster to see if the user is already in the roster
                     roster.forEach(function(user){
                         // This step can cause errors so use a try and catch statement
@@ -117,19 +125,19 @@ io.on("connection", function(socket){
                         try{
                             // If the user is already in the roster, push the socket to the users sockets list
                             if (user.userID == userID) {
-                            user.sockets.push(socket.id)
-                            found = true
+                            user.sockets.push(socket.id);
+                            found = true;
                             }
                         } catch(TypeError){
-                            console.debug("Error comparing userIDs or pushing sockets to the user")
+                            console.debug("Error comparing userIDs or pushing sockets to the user");
                         }
                     })
                     if (!found) {
                         // If the user is not already in the roster, add it to the roster.
-                        roster.push({_id: data.userID, username: userName, sockets: [socket.id]})
+                        roster.push({_id: data.userID, username: userName, sockets: [socket.id]});
                     }
                     // Send a roster update message to all clients.
-                    io.emit('roster update', roster)
+                    io.emit('roster update', roster);
                     
                     // Send init message with all chats and users
                     // $ne finds all users except the current one
@@ -141,28 +149,28 @@ io.on("connection", function(socket){
                             
                             // Find all the chats that contain the user as a recipient 
                             chats.forEach(function(oneChat){
-                                var isInChat = false
-                                console.debug(oneChat.chatParticipants)
+                                var isInChat = false;
+                                console.debug(oneChat.chatParticipants);
                                 oneChat.chatParticipants.forEach(function(part){
                                     if (isInChat) {return true}
                                 
                                   if (part == userID) {
-                                      console.debug(userID)
-                                      isInChat = true
+                                      console.debug(userID);
+                                      isInChat = true;
                                       
                                   } 
                                  
-                                })
+                                });
                                 // console.debug(isInChat)
                                 if (isInChat != true){
                                     
-                                     chats.splice(chats.indexOf(oneChat), 1)
+                                     chats.splice(chats.indexOf(oneChat), 1);
                                     //  console.debug(chats)
                                  }
                             })
                             // Send each user that is not the current user, and each chat that contains the user, to the socket the user logged into
                             console.debug("Sending initialisation data of " + chats.length + " chats, " + users.length + " users to user: " + userID + " on socket: " + socket.id)
-                            socket.emit('initialisation data', {chats: chats, users:users})
+                            socket.emit('initialisation data', {chats: chats, users:users});
                         })
                         
                     })
@@ -170,7 +178,7 @@ io.on("connection", function(socket){
                 }
                 
             } else {
-                socket.emit("auth failed")
+                socket.emit("auth failed");
             }
         })
     })
