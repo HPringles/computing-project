@@ -20,7 +20,7 @@ module.exports = function(passport){
     },
     function(req, username ,password,done){
         process.nextTick(function(){
-            User.findOne({'local.username': username}, function(err, user){
+            User.findOne({'username': username}, function(err, user){
                 if (err) return done(err);
                 
                 if (user) {
@@ -51,17 +51,20 @@ module.exports = function(passport){
         
     },
     function(req, username, password, done){
-        User.findOne({'local.username' : username}, function(err, user){
+        User.findOne({ 'username' : username}, function(err, user){
             if (err) return done(err);
             
             if (!user){
+                console.log("No User Found")
                 return done(null, false)
             }
-            
+            console.log(user.validPassword)
             if (!user.validPassword(password)){
+                console.log("Password Incorrect")
                 return done(null, false)
             }
             
+            console.log("Logging in")
             return done(null, user)
         })
     }))

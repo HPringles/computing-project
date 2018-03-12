@@ -15,7 +15,7 @@ userSchema.methods.generateHash = function(password){
 };
 
 userSchema.methods.validPassword = function(password){
-    return bcrypt.compareSync(password, this.local.password);
+    return bcrypt.compareSync(password, this.password);
 };
 
 // save the message schema as a mongoose model(allows it to be accessed and used)

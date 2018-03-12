@@ -36,20 +36,10 @@ app.get("/login", function(req, res){
     When the /login route is POST requested
     login the user
 */
-app.post("/login", upload.array() ,function(req, res, next){
-
-    User.findById(req.body.id, function(err, data){
-        if(err){ return console.log(err) }
-        res.cookie('userName', data.username);
-        res.cookie('authKey', data.authenticationKey);
-        res.cookie('userID', data.id);
-        res.redirect("/chat");
-    });
-    // If userID supplied in req corresponds with an already create userID
-    // Set the authentication cookie and redirect to the /chat route
-    
-    
-});
+app.post("/login", upload.array(), passport.authenticate('local-login', {
+    successRedirect: "/authorise",
+    failureRedirect: "/login"
+}))
 
 /* 
     When the /signup route is POST requested
@@ -67,32 +57,13 @@ app.get("/authorise", function(req, res, next){
     res.redirect("/chat")
 })
 
-//function(req, res, next){
-    // var newUser = new User({
-    //     username: req.body.username,
-    //     authenticationKey: crypto.randomBytes(12).toString("hex")
-    // });
-    
-    // newUser.save(function(err, data){
-    //     if(err) {return console.log(data)}
-    // });
-    
-    // res.redirect("/login");
-    // // If userID supplied in req corresponds with an already create userID
-    // // Set the authentication cookie and redirect to the /chat route
-    
-    
-    
-    
-// });
-
 /* 
     When the logout route is requested, 
     remove all cookies from the user and redirect to the login route
 */
 app.get("/logout", function(req, res){
     //unset the cookies and redirect to the login page
-    
+    req.logout()
     res.clearCookie("authKey");
     res.clearCookie("userName");
     res.clearCookie("userID");
