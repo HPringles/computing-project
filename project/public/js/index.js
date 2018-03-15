@@ -1,6 +1,5 @@
 var socket = io();
-var crypto = window.bCrypto
-console.log(window.bCrypto)
+
 
 function getCookie(cname) {
     var name = cname + "=";
@@ -16,6 +15,7 @@ function getCookie(cname) {
     }
     return "";
 }
+
 
 // CREATE A MODULE TO RUN THE ANGULARJS CODE INSIDE OF
 angular.module('whatsUp', [])
@@ -80,6 +80,12 @@ angular.module('whatsUp', [])
         // Get a message that was sent as part of the initialisation process
         socket.on("initialisation data", function(data){
             console.log(data)
+            data.chats.forEach(function(chat){
+                console.log(chat)
+                chat.chatMessages.forEach(function(message){
+                    message.messageText = whatsUpController.decryptMessage(message.messageText)
+                })
+            })
             $timeout(function(){
                 whatsUpController.chats = data.chats;
                 whatsUpController.contacts = data.users;
@@ -103,18 +109,18 @@ angular.module('whatsUp', [])
         });
         
         socket.on("chat message", function(data){
-            var decipher = crypto.createDecipher('aes', whatsUpController.encryptionKey)
-            var chatMessage = decipher.update(data.message, 'utf-8', 'hex')
-            chatMessage += decipher.update.final('hex')
+            
             console.log("msg recieved");
             // If initialisation is complete, add the message to the messages array
             if(whatsUpController.initComplete){
                 $timeout(function(){
                     // appends the message data to the whatsAppController.messages array
+                    console.log(data.message)
+                    data.message.messageText = whatsUpController.decryptMessage(data.message.messageText)
                     
                     whatsUpController.chats.forEach(function(chat){
                         if (chat._id == data.chat){
-                            whatsUpController.chats[whatsUpController.chats.indexOf(chat)].chatMessages.push(chatMessage);
+                            whatsUpController.chats[whatsUpController.chats.indexOf(chat)].chatMessages.push(data.message);
                             
                         }
                     });
@@ -173,12 +179,10 @@ angular.module('whatsUp', [])
         
         // When the form is submitted, send the message to the server
         whatsUpController.sendMessage = function(){
-            var cipher = crypto.createCipher('aes', whatsUpController.encryptionKey)
+            
             // checks there is a message in the box, then sends it
             if (whatsUpController.messageText && whatsUpController.currentChatID){
-                var message = cipher.update(whatsUpController.messageText,'utf-8', 'hex')
-                message.update.final('hex')
-                socket.emit("chat message", {chatID: whatsUpController.currentChatID, messageText: message, userID: getCookie('userID')});
+                socket.emit("chat message", {chatID: whatsUpController.currentChatID, messageText: whatsUpController.encryptMessage(whatsUpController.messageText), userID: getCookie('userID')});
             } else {
                 alert("Error, enter a message and/or open a chat in order to correctly send a message")
             }
@@ -200,6 +204,28 @@ angular.module('whatsUp', [])
                 }
             });
         };
+        
+        whatsUpController.decryptMessage = function(messageText){
+            // Convert the encrypted hex to bytes
+            var encryptedBytes = aesjs.utils.hex.toBytes(messageText);
+            // Set up the encryption mode
+            var aesCtr = new aesjs.ModeOfOperation.ctr(new Uint8Array(whatsUpController.encryptionKey), new aesjs.Counter(5));
+            // Decrypt the message
+            var decryptedBytes = aesCtr.decrypt(encryptedBytes);
+            // convert the message back to text
+            return aesjs.utils.utf8.fromBytes(decryptedBytes);
+        }
+        
+        whatsUpController.encryptMessage = function(messageText){
+            // Convert the text to bytes
+            var textBytes = aesjs.utils.utf8.toBytes(whatsUpController.messageText);
+            // Set up the encryption mode.
+            var aesCtr = new aesjs.ModeOfOperation.ctr(new Uint8Array(whatsUpController.encryptionKey), new aesjs.Counter(5));
+            // Encrypt the message
+            var encryptedBytes = aesCtr.encrypt(textBytes);
+            // Convert the message to hex for easy transfer
+            var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+        }
         
         /*  If a new chat is recieved from the database 
             Add it to the list of chats if it is not already there.
