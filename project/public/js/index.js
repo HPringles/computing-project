@@ -1,5 +1,6 @@
 var socket = io();
-
+var crypto = window.bCrypto
+console.log(window.bCrypto)
 
 function getCookie(cname) {
     var name = cname + "=";
@@ -82,6 +83,7 @@ angular.module('whatsUp', [])
             $timeout(function(){
                 whatsUpController.chats = data.chats;
                 whatsUpController.contacts = data.users;
+                whatsUpController.encryptionKey = data.password
                 whatsUpController.initComplete = true;
             });
             
@@ -101,6 +103,9 @@ angular.module('whatsUp', [])
         });
         
         socket.on("chat message", function(data){
+            var decipher = crypto.createDecipher('aes', whatsUpController.encryptionKey)
+            var chatMessage = decipher.update(data.message, 'utf-8', 'hex')
+            chatMessage += decipher.update.final('hex')
             console.log("msg recieved");
             // If initialisation is complete, add the message to the messages array
             if(whatsUpController.initComplete){
@@ -109,7 +114,7 @@ angular.module('whatsUp', [])
                     
                     whatsUpController.chats.forEach(function(chat){
                         if (chat._id == data.chat){
-                            whatsUpController.chats[whatsUpController.chats.indexOf(chat)].chatMessages.push(data.message);
+                            whatsUpController.chats[whatsUpController.chats.indexOf(chat)].chatMessages.push(chatMessage);
                             
                         }
                     });
@@ -168,9 +173,12 @@ angular.module('whatsUp', [])
         
         // When the form is submitted, send the message to the server
         whatsUpController.sendMessage = function(){
+            var cipher = crypto.createCipher('aes', whatsUpController.encryptionKey)
             // checks there is a message in the box, then sends it
             if (whatsUpController.messageText && whatsUpController.currentChatID){
-                socket.emit("chat message", {chatID: whatsUpController.currentChatID, messageText: whatsUpController.messageText, userID: getCookie('userID')});
+                var message = cipher.update(whatsUpController.messageText,'utf-8', 'hex')
+                message.update.final('hex')
+                socket.emit("chat message", {chatID: whatsUpController.currentChatID, messageText: message, userID: getCookie('userID')});
             } else {
                 alert("Error, enter a message and/or open a chat in order to correctly send a message")
             }

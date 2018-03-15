@@ -170,7 +170,7 @@ io.on("connection", function(socket){
                             })
                             // Send each user that is not the current user, and each chat that contains the user, to the socket the user logged into
                             console.debug("Sending initialisation data of " + chats.length + " chats, " + users.length + " users to user: " + userID + " on socket: " + socket.id)
-                            socket.emit('initialisation data', {chats: chats, users:users});
+                            socket.emit('initialisation data', {chats: chats, users:users, password: process.env.ENC_KEY});
                         })
                         
                     })
