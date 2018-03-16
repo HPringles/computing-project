@@ -79,9 +79,8 @@ angular.module('whatsUp', [])
         
         // Get a message that was sent as part of the initialisation process
         socket.on("initialisation data", function(data){
-            console.log(data)
+            whatsUpController.encryptionKey = data.password
             data.chats.forEach(function(chat){
-                console.log(chat)
                 chat.chatMessages.forEach(function(message){
                     message.messageText = whatsUpController.decryptMessage(message.messageText)
                 })
@@ -89,7 +88,7 @@ angular.module('whatsUp', [])
             $timeout(function(){
                 whatsUpController.chats = data.chats;
                 whatsUpController.contacts = data.users;
-                whatsUpController.encryptionKey = data.password
+                
                 whatsUpController.initComplete = true;
             });
             
@@ -207,9 +206,10 @@ angular.module('whatsUp', [])
         
         whatsUpController.decryptMessage = function(messageText){
             // Convert the encrypted hex to bytes
+            console.log(typeof whatsUpController.encryptionKey)
             var encryptedBytes = aesjs.utils.hex.toBytes(messageText);
             // Set up the encryption mode
-            var aesCtr = new aesjs.ModeOfOperation.ctr(new Uint8Array(whatsUpController.encryptionKey), new aesjs.Counter(5));
+            var aesCtr = new aesjs.ModeOfOperation.ctr(whatsUpController.encryptionKey, new aesjs.Counter(5));
             // Decrypt the message
             var decryptedBytes = aesCtr.decrypt(encryptedBytes);
             // convert the message back to text
@@ -218,13 +218,14 @@ angular.module('whatsUp', [])
         
         whatsUpController.encryptMessage = function(messageText){
             // Convert the text to bytes
+            
             var textBytes = aesjs.utils.utf8.toBytes(whatsUpController.messageText);
             // Set up the encryption mode.
-            var aesCtr = new aesjs.ModeOfOperation.ctr(new Uint8Array(whatsUpController.encryptionKey), new aesjs.Counter(5));
+            var aesCtr = new aesjs.ModeOfOperation.ctr(whatsUpController.encryptionKey, new aesjs.Counter(5));
             // Encrypt the message
             var encryptedBytes = aesCtr.encrypt(textBytes);
             // Convert the message to hex for easy transfer
-            var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+            return aesjs.utils.hex.fromBytes(encryptedBytes);
         }
         
         /*  If a new chat is recieved from the database 

@@ -22,6 +22,11 @@ app.use(cookieParser(process.env.COOKIE_SECRETS)) // Set up cookie parser using 
 app.use(session({secret: process.env.SESSION_SECRET}))
 app.use(passport.initialize())
 app.use(passport.session())
+var enc_key = []
+process.env.ENC_KEY.split(",").forEach(function(key){
+    enc_key.push(parseInt(key))
+})
+// enc_key = new Uint8Array(enc_key)
 
 mongoose.connect(process.env.DATABASE_URL, { useMongoClient: true });
 
@@ -170,7 +175,7 @@ io.on("connection", function(socket){
                             })
                             // Send each user that is not the current user, and each chat that contains the user, to the socket the user logged into
                             console.debug("Sending initialisation data of " + chats.length + " chats, " + users.length + " users to user: " + userID + " on socket: " + socket.id)
-                            socket.emit('initialisation data', {chats: chats, users:users, password: process.env.ENC_KEY});
+                            socket.emit('initialisation data', {chats: chats, users:users, password: enc_key});
                         })
                         
                     })

@@ -10,7 +10,7 @@ module.exports = function(app, passport){
 
 // When the / route is requested - render the index page.
 app.get("/", function(req, res){
-    res.redirect("/chat");
+    res.redirect("/login");
     
 });
 /*  When the chat route is requested - render the chat page.
@@ -67,6 +67,10 @@ app.get("/logout", function(req, res){
     res.clearCookie("userName");
     res.clearCookie("userID");
     res.redirect("/login");
+});
+
+app.get("*", function(req, res){
+    res.redirect("/chat");
 });
 
 };
